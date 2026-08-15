@@ -617,19 +617,20 @@ class VocaDBPlugin(MetadataSourcePlugin):
         ignored_discs: list[int] = []
         disc: DiscDict
         for disc in release.get("discs", []):
+            disc_tracks: list[SongInAlbumDict] = [
+                track
+                for track in release.get("tracks", [])
+                if track.get("discNumber") == disc["discNumber"]
+            ]
             if (
                 disc["mediaType"] == "Video"
                 and beets.config["match"]["ignore_video_tracks"]
-                or not release.get("tracks")
+                or not disc_tracks
             ):
                 ignored_discs.append(disc["discNumber"])
             else:
                 disc["total"] = max(
-                    [
-                        y
-                        for y in release.get("tracks", {})
-                        if y.get("discNumber") == disc["discNumber"]
-                    ],
+                    disc_tracks,
                     key=lambda y: y["trackNumber"],
                 )["trackNumber"]
 
@@ -683,7 +684,7 @@ class VocaDBPlugin(MetadataSourcePlugin):
             if "Label" in albumartist.get("categories", ""):
                 label = albumartist.get("name")
                 break
-        mediums: int = len(release["discs"])
+        mediums: int = len(release["discs"]) - len(ignored_discs)
         catalognum: Optional[str] = release.get("catalogNumber")
         genres: Optional[list[str]] = self.get_genres(release)
         media: Optional[str]
