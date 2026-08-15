@@ -42,7 +42,7 @@ class TestTouhouDBPlugin(TestVocaDBPlugin, plugin=TouhouDBPlugin()):
         self.assertEqual(artist, "Circle A")
         self.assertFalse(va)
 
-    def test_multiple_circles_remain_various_artists(self) -> None:
+    def test_multiple_circles_are_used_for_album_artist(self) -> None:
         release = {
             "discType": "Compilation",
             "artists": [
@@ -63,8 +63,8 @@ class TestTouhouDBPlugin(TestVocaDBPlugin, plugin=TouhouDBPlugin()):
 
         _, artist, va = self.plugin.get_album_artist(release)
 
-        self.assertEqual(artist, self.plugin.va_string)
-        self.assertTrue(va)
+        self.assertEqual(artist, "Circle A, Circle B")
+        self.assertFalse(va)
 
     def test_support_circle_does_not_replace_various_artists(self) -> None:
         release = {

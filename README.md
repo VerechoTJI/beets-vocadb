@@ -71,13 +71,21 @@ import:
     - en
 ```
 
+### TouhouDB album artists
+
+TouhouDB sometimes reports an album as being by various artists even when it
+has producing circles. When an album has one or more non-support circles, the
+TouhouDB plugin uses those circles as the album artist. Albums with no circle
+or only support circles remain various-artist releases.
+
 ## Advanced configuration
 
 Adding new sources is easy as long as the site is based on VocaDB.
 
 A new source can be added by creating a new python file in the beetsplug folder
-with a class that inherits classes `VocaDBPlugin` and `VocaDBInstance` with the
-instance information (see `utaitedb.py` or `touhoudb.py` for reference.) The
-filename dictates the plugins name used for configuration.
+with a class that inherits `VocaDBPlugin` and supplies its `InstanceInfo` (see
+`utaitedb.py` or `touhoudb.py` for reference). The filename dictates the plugin
+name used for configuration. Sources with different album-artist rules can
+override `get_album_artist()` without replacing the album conversion logic.
 
 Feel free to create an issue or pull request about adding new sources.
