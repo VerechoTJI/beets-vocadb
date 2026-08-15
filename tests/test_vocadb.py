@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from beetsplug.vocadb import InfoDict, LyricsDict, VocaDBPlugin
+from beetsplug.vocadb import AlbumDict, InfoDict, LyricsDict, VocaDBPlugin
 
 
 class TestVocaDBPlugin(TestCase):
@@ -63,6 +63,36 @@ class TestVocaDBPlugin(TestCase):
             ]
         }
         self.assertEqual(self.plugin.get_genres(info), ["Genre2"])
+
+    def test_album_info_ignores_declared_disc_without_tracks(self) -> None:
+        release: AlbumDict = {
+            "id": 1,
+            "name": "Album A",
+            "discType": "Album",
+            "artists": [],
+            "discs": [
+                {"discNumber": 1, "mediaType": "Audio", "name": "Disc A"},
+                {"discNumber": 2, "mediaType": "Audio", "name": "Disc B"},
+            ],
+            "tracks": [
+                {
+                    "discNumber": 1,
+                    "trackNumber": 1,
+                    "computedCultureCodes": [],
+                    "song": {
+                        "id": 1,
+                        "name": "Track A",
+                        "artists": [],
+                        "lyrics": [],
+                    },
+                }
+            ],
+        }
+
+        album_info = self.plugin.album_info(release)
+
+        self.assertEqual(album_info.mediums, 1)
+        self.assertEqual(len(album_info.tracks), 1)
 
     def test_language(self) -> None:
         self.plugin.languages = ["en", "jp"]
