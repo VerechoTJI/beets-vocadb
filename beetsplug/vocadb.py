@@ -584,6 +584,25 @@ class VocaDBPlugin(MetadataSourcePlugin):
             self._log.debug("API Error: {0} (query: {1})", e, url)
             return None
 
+    def get_album_artist(
+        self, release: AlbumDict
+    ) -> tuple[dict[str, dict[str, str]], str, bool]:
+        """Resolve album artist metadata for an API release.
+
+        Subclasses may override this policy when an API instance interprets
+        artist roles or compilation releases differently.
+        """
+        va: bool = release.get("discType", "") == "Compilation"
+        artist_categories, artist = self.get_artists(
+            release.get("artists", []),
+            self.va_string,
+            include_featured_artists=self.include_featured_album_artists,
+            comp=va,
+        )
+        if artist == self.va_string:
+            va = True
+        return artist_categories, artist, va
+
     def album_info(
         self, release: AlbumDict, search_lang: Optional[str] = None
     ) -> AlbumInfo:
@@ -614,19 +633,12 @@ class VocaDBPlugin(MetadataSourcePlugin):
                     key=lambda y: y["trackNumber"],
                 )["trackNumber"]
 
-        va: bool = release.get("discType", "") == "Compilation"
         album: str = release.get("name", "")
         album_id: str = str(release.get("id", ""))
         artist_categories: dict[str, dict[str, str]]
         artist: str
-        artist_categories, artist = self.get_artists(
-            release.get("artists", []),
-            self.va_string,
-            include_featured_artists=self.include_featured_album_artists,
-            comp=va,
-        )
-        if artist == self.va_string:
-            va = True
+        va: bool
+        artist_categories, artist, va = self.get_album_artist(release)
         artists: list[str] = []
         artists_ids: list[str] = []
         category: dict[str, str]
